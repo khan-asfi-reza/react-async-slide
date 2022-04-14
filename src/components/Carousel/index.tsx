@@ -49,6 +49,8 @@ export default function Carousel({children,
                                  onLastSlide,
                                  async,
                                  infinite,
+                                 autoplay,
+                                 interval
                                  }: CarouselProps){
 
     const windowSize = useWindowSize();
@@ -113,7 +115,21 @@ export default function Carousel({children,
         let width = getSlideWidth();
         return gap ? width + width * 0.05 : width;
     }
-
+    
+    useEffect(()=>{
+        
+        let timeout: NodeJS.Timeout;
+        if(autoplay){
+            timeout = setTimeout(()=>{
+                moveRight()
+            }, interval ? interval : 3000)
+        }
+        return ()=>{
+            clearTimeout(timeout);
+        }
+        
+    }, [autoplay, currentSlide, interval])
+    
     return(
         <div style={styles.root}>
             <div style={styles.carousel}>

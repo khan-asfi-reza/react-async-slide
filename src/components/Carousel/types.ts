@@ -22,5 +22,5 @@ export interface CarouselProps {
     infinite?: boolean,
     async?: boolean,
     autoplay?:boolean,
-    interval?:boolean
+    interval?:number
 }
