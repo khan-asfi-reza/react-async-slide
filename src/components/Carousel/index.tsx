@@ -1,4 +1,4 @@
-import {useEffect, useReducer} from "react";
+import {useEffect, useReducer, useRef} from "react";
 import {useWindowSize} from "../../hooks/useWindowSize";
 import {CarouselProps} from "./types";
 import {styles} from "./style";
@@ -57,6 +57,8 @@ export default function Carousel({children,
 
     const [{currentSlide, isLoading, slidesInVP}, dispatch] = useReducer<ReducerType>(reducer, initialState)
 
+    const ref = useRef<HTMLUListElement>(null)
+
     useEffect(()=>{
         dispatch({type: ActionEnum.CHANGE_SLIDE_IN_VP,
             payload: getNumberOfSlidesViewPort(slidesInViewport)})
@@ -76,7 +78,7 @@ export default function Carousel({children,
         })
     }
 
-    const canMoveForward = () => currentSlide < children.length - slidesInVP
+    const canMoveForward = () => currentSlide < children.length - getNumberOfSlidesViewPort(slidesInViewport)
 
     const canMoveBackward = () => currentSlide !== 0
 
@@ -90,8 +92,8 @@ export default function Carousel({children,
             }
     }
 
-
     const moveRight = async () => {
+
         if(canMoveForward()){
             changeSlide(currentSlide + 1);
         }else{
@@ -104,6 +106,9 @@ export default function Carousel({children,
                     }
                 });
             }
+            else{
+                changeSlide(0);
+            }
         }
     }
 
@@ -112,8 +117,7 @@ export default function Carousel({children,
     }
 
     const getMovement = () => {
-        let width = getSlideWidth();
-        return gap ? width + width * 0.05 : width;
+        return getSlideWidth() * currentSlide;
     }
     
     useEffect(()=>{
@@ -129,20 +133,27 @@ export default function Carousel({children,
         }
         
     }, [autoplay, currentSlide, interval])
-    
+
+
     return(
         <div style={styles.root}>
             <div style={styles.carousel}>
                 <div style={styles.wrapper}>
-                    <ul style={{...styles.slider, gap: gap ? '1%' : '0', transform: `translate3D(-${currentSlide * getMovement()}%, 0, 0)`}}>
+                    <ul ref={ref} style={{...styles.slider, transform: `translate3D(-${getMovement()}%, 0, 0)`}}>
                         {
                             children.map((each, key) => (
-                                <li style={{...styles.slide, flex: `0 0 ${100 / slidesInVP}%`}} key={key}>
+                                <li style={{...styles.slide, boxSizing:
+                                        "border-box", flex: `0 0 ${100 / slidesInVP}%`,
+                                    padding: gap ? ' 0 1rem': '0',
+
+                                }} key={key}>
                                     {each}
                                 </li>
                             ))
                         }
+
                     </ul>
+
                 </div>
                 <button disabled={isLoading} onClick={moveRight} style={{...styles.sliderButton, right: 0}}>
                     {">"}

@@ -63,24 +63,13 @@ function App() {
 
     return (
         <div className="container mx-auto py-32">
-            <Carousel slidesInViewport={{
+            <Carousel  gap slidesInViewport={{
                 base: 1,
                 md: 2,
                 xl: 3,
                 xxl: 4,
-            }}
-                      onLastSlide={async ()=>{
-                await wait(3000);
-                await setList([...list, {
-                    id: 1,
-                    text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consectetur, explicabo! Lorem ipsum " +
-                        "dolor sit amet, consectetur adipisicing elit. Dolor enim error est expedita maxime omnis pariatur " +
-                        "placeat " +
-                        "qui quo repudiandae.",
-                    color: "crimson"
-                }])
-            }}>
-                {
+            }} infinite
+            >{
                     list.map((each, key) => (
                         <div id={`carousel_${key}`} style={{flexFlow: "column",
                             background: each.color, color: 'white', fontFamily: "sans-serif", padding: "2rem 1.5rem"}} key={key}>
