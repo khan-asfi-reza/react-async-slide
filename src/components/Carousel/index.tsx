@@ -43,6 +43,18 @@ const reducer = (state:StateInterface, action: ActionInterface) => {
 
 type ReducerType = (previousState: StateInterface, action: ActionInterface) => any
 
+/**
+ * Async Carousel Component
+ * @param {ReactChild[]}children - Elements inside the carousel / Carousel Slides
+ * @param {number | SlideNumberOption}slidesInViewport - Number of slides in the viewport that will be shown
+ * @param {boolean} gap - Will show gap between slides
+ * @param {PromiseLike} onLastSlide - Async Function that will be executed when the carousel will go to the last slide
+ * @param {boolean} async - Execute async function on last slide - If async is true, infinite loop will not work
+ * @param {boolean}infinite - Carousel loop
+ * @param {boolean}autoplay - Autoplay the carousel
+ * @param {boolean}interval - After how many millisecond the slide will move forward
+ * @param buttonClassName - Carousel buttons classname property to edit styles
+ **/
 export default function Carousel({children,
                                  slidesInViewport, 
                                  gap, 
@@ -50,7 +62,8 @@ export default function Carousel({children,
                                  async,
                                  infinite,
                                  autoplay,
-                                 interval
+                                 interval,
+                                 buttonClassName
                                  }: CarouselProps){
 
     const windowSize = useWindowSize();
@@ -97,7 +110,7 @@ export default function Carousel({children,
         if(canMoveForward()){
             changeSlide(currentSlide + 1);
         }else{
-            if(onLastSlide){
+            if(onLastSlide && async ){
                 toggleLoading(true);
                 onLastSlide().then(()=>{
                     toggleLoading(false)
@@ -155,11 +168,16 @@ export default function Carousel({children,
                     </ul>
 
                 </div>
-                <button disabled={isLoading} onClick={moveRight} style={{...styles.sliderButton, right: 0}}>
+                <button disabled={isLoading}
+                        onClick={moveRight}
+                        style={{...styles.sliderButton, right: 0}}
+                        className={buttonClassName}>
                     {">"}
                     {isLoading && 'Loading'}
                 </button>
-                <button onClick={moveLeft} style={{...styles.sliderButton, left: 0}}>
+                <button onClick={moveLeft}
+                        style={{...styles.sliderButton, left: 0}}
+                        className={buttonClassName}>
                     {"<"}
                 </button>
             </div>
