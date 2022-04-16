@@ -50,13 +50,13 @@ type ReducerType = (previousState: StateInterface, action: ActionInterface) => a
  * @param {ReactChild[]}children - Elements inside the carousel / Carousel Slides
  * @param {number | SlideNumberOption}slidesInViewport - Number of slides in the viewport that will be shown
  * @param {boolean} gap - Will show gap between slides
- * @param {PromiseLike} onLastSlide - Async Function that will be executed when the carousel will go to the last slide
+ * @param {PromiseLike} onSlideChange - Async Function that will be executed when the carousel will go to the last slide
  * @param {boolean}autoplay - Autoplay the carousel
  * @param {boolean}interval - After how many millisecond the slide will move forward
  * @param buttonClassName - Carousel buttons classname property to edit styles
  **/
 export default function Carousel({children,
-                                 slidesInViewport, 
+                                 slidesInViewport,
                                  gap, 
                                  onSlideChange,
                                  autoplay,
