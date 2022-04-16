@@ -3,9 +3,9 @@
 <h1>
 react-slider
 </h1>
-
+<img src="https://github.com/khan-asfi-reza/react-slider/actions/workflows/ci.yml/badge.svg"/>
 <p>
-React based carousel slider, with async forward loading
+React based lightweight carousel slider
 </p>
 </div>
 

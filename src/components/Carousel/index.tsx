@@ -199,10 +199,10 @@ export default function Carousel({children,
     return(
         <div style={styles.root}>
             <div style={styles.wrapper}>
-                <ul ref={ref} style={{...styles.slider, ...carouselStyle, left: `-${getSlideWidth()}%`}}>
+                <ul data-testid={"carousel"} className={autoplay ? 'autoplay': ''} ref={ref} style={{...styles.slider, ...carouselStyle, left: `-${getSlideWidth()}%`}}>
                     {
                         children.map((each, key) => (
-                            <li style={{...styles.slide, boxSizing: "border-box", flex: `0 0 ${100 / slidesInVP}%`,
+                            <li tabIndex={key} className={currentSlide === key ? 'active': ''} style={{...styles.slide, boxSizing: "border-box", flex: `0 0 ${100 / slidesInVP}%`,
                                 padding: gap ? ' 0 1rem': '0',
                             }} key={key}>
                                 {each}
@@ -212,14 +212,14 @@ export default function Carousel({children,
 
                 </ul>
             </div>
-            <button onClick={moveRight}
+            <button id={"carousel_next"} data-testid={"next"} onClick={moveRight}
                     style={{...styles.sliderButton, right: 0}}
                     className={buttonClassName}>
                 <svg xmlns="http://www.w3.org/2000/svg" style={styles.sliderIcon} viewBox="0 0 40 40" width="20" height="20">
                     <path d="m13.5 7.01 13 13m-13 13 13-13"/>
                 </svg>
             </button>
-            <button onClick={moveLeft}
+            <button id={"carousel_prev"} data-testid={"prev"} onClick={moveLeft}
                     style={{...styles.sliderButton, left: 0}}
                     className={buttonClassName}>
                 <svg xmlns="http://www.w3.org/2000/svg" style={{...styles.sliderIcon, transform: 'scaleX(-1)'}} viewBox="0 0 40 40" width="20" height="20">
