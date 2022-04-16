@@ -1,9 +1,5 @@
 name: Test
-on:
-  push:
-    branches: [ master, development ]
-  pull_request:
-    branches: [ master, development ]
+on: [push, pull_request]
 jobs:
   test:
     timeout-minutes: 60
