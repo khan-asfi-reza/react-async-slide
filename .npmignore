@@ -1,0 +1,5 @@
+docs
+.storybook
+public
+node_modules
+.env
