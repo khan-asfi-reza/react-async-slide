@@ -3,7 +3,7 @@
 <h1>
 react-slider
 </h1>
-<img src="https://github.com/khan-asfi-reza/react-slider/actions/workflows/test.yml/badge.svg" alt=""/>
+<img src="https://github.com/khan-asfi-reza/react-slider/actions/workflows/test.yaml/badge.svg" alt=""/>
 <p>
 React based lightweight carousel slider
 </p>
