@@ -18,10 +18,10 @@ export interface CarouselProps {
     children: ReactChild[],
     slidesInViewport?: number | SlideNumberOption,
     gap?: boolean,
-    onLastSlide?: any,
-    infinite?: boolean,
-    async?: boolean,
+    onSlideChange?(): any,
     autoplay?:boolean,
     interval?:number,
     buttonClassName?:string,
 }
+
+export type SlideMovement = 'forward' | 'backward'

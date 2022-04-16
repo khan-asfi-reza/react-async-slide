@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<style>
+    .wrap {
+        overflow: hidden;
+    }
+
+    .carousel {
+        display: flex;
+        left: -100%;
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        position: relative;
+        transform: translateX(100%);
+    }
+
+    .carousel.is-reversing {
+        transform: translateX(-100%);
+    }
+
+    .carousel.is-set {
+        transform: none;
+        transition: transform .5s cubic-bezier(0.23, 1, 0.32, 1);
+    }
+
+    .carousel-seat {
+        background: #ddd;
+        flex: 1 0 100%;
+        order: 2;
+    }
+    .carousel-seat:nth-child(even) {
+        background: #d5d5d5;
+    }
+
+
+    .carousel-seat.is-ref {
+        order: 1;
+    }
+
+    h2 {
+        color: #aaa;
+        font-size: 7em;
+        font-weight: normal;
+        margin: 0;
+        padding: 0.6em 0;
+        text-align: center;
+    }
+
+    .controls {
+        padding: 2em;
+        text-align: center;
+    }
+    .controls button {
+        background: #aaa;
+        border: 0;
+        border-radius: 0.25em;
+        color: #eee;
+        padding: 0.5em 1em;
+    }
+    .controls button:hover, .controls button:focus {
+        background: magenta;
+    }
+</style>
+<body>
+<div class='wrap'>
+    <ul id="carousel" class='carousel is-set'>
+        <li class='carousel-seat'>
+            <h2>1</h2>
+        </li>
+        <li class='carousel-seat'>
+            <h2>2</h2>
+        </li>
+        <li class='carousel-seat'>
+            <h2>3</h2>
+        </li>
+        <li class='carousel-seat'>
+            <h2>4</h2>
+        </li>
+        <li class='carousel-seat'>
+            <h2>5</h2>
+        </li>
+        <li class='carousel-seat is-ref'>
+            <h2>6</h2>
+        </li>
+    </ul>
+</div>
+<div class='controls'>
+    <button id="prev" class='toggle'>Prev</button>
+    <button id="next" class='toggle' data-toggle='next'>Next</button>
+</div>
+</body>
+<script
+        src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+        crossorigin="anonymous"></script>
+<script>
+
+    // (function() {
+    //     var carousel, next, prev, seats;
+    //
+    //     carousel = document.getElementById('carousel');
+    //
+    //     seats = document.querySelectorAll('.carousel-seat');
+    //
+    //     next = function(el) {
+    //         if (el.nextElementSibling) {
+    //             return el.nextElementSibling;
+    //         } else {
+    //             return seats[0];
+    //         }
+    //     };
+    //
+    //     prev = function(el) {
+    //         if (el.nextElementSibling) {
+    //             return el.nextElementSibling;
+    //         } else {
+    //             return seats[seats.length - 1];
+    //         }
+    //     };
+    //
+    //     document.getElementById('next').addEventListener('click', function (e) {
+    //         var el, i, j, new_seat, ref;
+    //         el = document.getElementsByClassName('is-ref')[0];
+    //         el.classList.remove('is-ref');
+    //         new_seat = next(el);
+    //         carousel.classList.remove('is-reversing');
+    //         new_seat.classList.add('is-ref')
+    //         new_seat.style.order = 1;
+    //         console.log(seats.length)
+    //         for (i = j = 2, ref = seats.length; (2 <= ref ? j <= ref : j >= ref); i = 2 <= ref ? ++j : --j) {
+    //             new_seat = next(new_seat);
+    //             new_seat.style.order = i
+    //         }
+    //         carousel.classList.remove('is-set');
+    //         return setTimeout((function() {
+    //             return carousel.classList.add('is-set');
+    //         }), 50);
+    //     })
+    //
+    // }).call(this);
+
+    (function() {
+        var carousel, next, prev, seats;
+
+        carousel = $('.carousel');
+
+        seats = $('.carousel-seat');
+
+        next = function(el) {
+            if (el.next().length > 0) {
+                return el.next();
+            } else {
+                return seats.first();
+            }
+        };
+
+        prev = function(el) {
+            if (el.prev().length > 0) {
+                return el.prev();
+            } else {
+                return seats.last();
+            }
+        };
+
+        $('.toggle').on('click', function(e) {
+            var el, i, j, new_seat, ref;
+            el = $('.is-ref').removeClass('is-ref');
+            if ($(e.currentTarget).data('toggle') === 'next') {
+                new_seat = next(el);
+                carousel.removeClass('is-reversing');
+            } else {
+                new_seat = prev(el);
+                carousel.addClass('is-reversing');
+            }
+            new_seat.addClass('is-ref').css('order', 1);
+            for (i = j = 2, ref = seats.length; (2 <= ref ? j <= ref : j >= ref); i = 2 <= ref ? ++j : --j) {
+                new_seat = next(new_seat).css('order', i);
+            }
+            carousel.removeClass('is-set');
+            return setTimeout((function() {
+                return carousel.addClass('is-set');
+            }), 50);
+        });
+
+    }).call(this);
+
+</script>
+</html>

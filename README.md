@@ -1,7 +1,7 @@
 <div align="center">
 <img src="public/logo.png" height="150"/>
 <h1>
-React-Async-Slide
+react-slider
 </h1>
 
 <p>
@@ -14,15 +14,16 @@ React based carousel slider, with async forward loading
 
 1. Responsive carousel slider
 2. Multiple slides in slide window
-3. Async slide loading on moving forward
-
+3. Autoplay with interval control
+4. No need to add any stylesheet
+5. Lightweight
 ## Docs
 
 
 ## Example 1
 
 ```jsx
-import Carousel from "react-async-slide";
+import Carousel from "react-slider";
 
 
 <Carousel
@@ -94,74 +95,4 @@ import Carousel from "react-async-slide";
         </p>
     </div>
 </Carousel>
-```
-
-## Example 2 With Async Data Loading
-
-```jsx
-
-export const MyApp = () => {
-    const wait = (ms) => {
-        return new Promise((resolve) => setTimeout(resolve, ms));
-    }
-
-    const [list, setList] = useState([
-        {
-            id: 1,
-            text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consectetur, explicabo! " +
-                "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolor enim error est expedita " +
-                "maxime omnis pariatur placeat qui quo repudiandae.",
-            color: "orangered"
-        },
-        {
-            id: 2,
-            text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consectetur, explicabo! " +
-                "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolor enim error est expedita " +
-                "maxime omnis pariatur placeat qui quo repudiandae.",
-            color: "crimson"
-        },
-
-    ]);
-
-
-    return (
-        <div className="container mx-auto py-32">
-            <Carousel  gap slidesInViewport={{
-                base: 1,
-                md: 2,
-                xl: 3,
-                xxl: 4,
-            }} infinite async onLastSlide={async ()=>{
-                await wait(2000);
-                setList([...list, {
-                    id: 3,
-                    text: "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Consectetur, explicabo! " +
-                        "Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dolor enim error est expedita " +
-                        "maxime omnis pariatur placeat qui quo repudiandae.",
-                    color: "crimson"
-                }])
-            }}
-            >{
-                list.map((each, key) => (
-                    <div id={`carousel_${key}`} style={{flexFlow: "column",
-                        background: each.color, color: 'white', fontFamily: "sans-serif", padding: "2rem 1.5rem"}} key={key}>
-                        <h1 >
-                            Flex box
-                        </h1>
-                        <p >
-                            This my text box, welcome to my text box, {each.text} ,
-                            Lorem ipsum dolor sit amet, consectetur adipisicing elit. Amet autem consequatur cupiditate dignissimos
-                            doloribus maiores neque nihil numquam qui quod? Consequuntur expedita in laboriosam nobis recusandae vero
-                            voluptate? Ab autem consequatur dolores ipsa laboriosam minus non nulla quam voluptatibus. A autem delectus
-                            earum error hic laudantium nobis non nulla obcaecati, optio pariatur praesentium, quas quod sed tenetur ut
-                            vero voluptatibus.
-                        </p>
-                    </div>
-                ))
-            }
-            </Carousel>
-        </div>
-    );
-}
-
 ```

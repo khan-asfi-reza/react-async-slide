@@ -1,32 +1,32 @@
-import {useEffect, useReducer, useRef} from "react";
+import {CSSProperties, useCallback, useEffect, useReducer, useRef} from "react";
 import {useWindowSize} from "../../hooks/useWindowSize";
-import {CarouselProps} from "./types";
-import {styles} from "./style";
+import {CarouselProps, SlideMovement} from "./types";
+import {carouselNotSliding, carouselSliding, styles} from "./style";
 import {getNumberOfSlidesViewPort} from "./utils";
 
 
 interface StateInterface{
     currentSlide: number,
-    isLoading: boolean,
     slidesInVP: number,
+    carouselStyle: CSSProperties
 }
 
 interface ActionInterface{
     type: ActionEnum,
-    payload: string | number | boolean,
+    payload: string | number | boolean | CSSProperties,
 }
 
 enum ActionEnum {
     CHANGE_SLIDE,
-    CHANGE_LOADING,
-    CHANGE_SLIDE_IN_VP
+    CHANGE_SLIDE_IN_VP,
+    CHANGE_CAROUSEL_STYLE
 }
 
 
 const initialState:StateInterface = {
     currentSlide: 0,
-    isLoading: false,
     slidesInVP: 1,
+    carouselStyle: carouselNotSliding
 }
 
 
@@ -34,10 +34,12 @@ const reducer = (state:StateInterface, action: ActionInterface) => {
     switch (action.type){
         case ActionEnum.CHANGE_SLIDE:
             return {...state, currentSlide: action.payload}
-        case ActionEnum.CHANGE_LOADING:
-            return {...state, isLoading: action.payload}
         case ActionEnum.CHANGE_SLIDE_IN_VP:
             return {...state, slidesInVP: action.payload}
+        case ActionEnum.CHANGE_CAROUSEL_STYLE:
+            return {
+                ...state, carouselStyle: action.payload
+            }
     }
 }
 
@@ -49,8 +51,6 @@ type ReducerType = (previousState: StateInterface, action: ActionInterface) => a
  * @param {number | SlideNumberOption}slidesInViewport - Number of slides in the viewport that will be shown
  * @param {boolean} gap - Will show gap between slides
  * @param {PromiseLike} onLastSlide - Async Function that will be executed when the carousel will go to the last slide
- * @param {boolean} async - Execute async function on last slide - If async is true, infinite loop will not work
- * @param {boolean}infinite - Carousel loop
  * @param {boolean}autoplay - Autoplay the carousel
  * @param {boolean}interval - After how many millisecond the slide will move forward
  * @param buttonClassName - Carousel buttons classname property to edit styles
@@ -58,81 +58,110 @@ type ReducerType = (previousState: StateInterface, action: ActionInterface) => a
 export default function Carousel({children,
                                  slidesInViewport, 
                                  gap, 
-                                 onLastSlide,
-                                 async,
-                                 infinite,
+                                 onSlideChange,
                                  autoplay,
                                  interval,
                                  buttonClassName
                                  }: CarouselProps){
 
+    // Window Size hook to observe window size change
     const windowSize = useWindowSize();
 
-    const [{currentSlide, isLoading, slidesInVP}, dispatch] = useReducer<ReducerType>(reducer, initialState)
+    // Carousel state and state dispatch function
+    const [
+        {currentSlide,
+        slidesInVP,
+        carouselStyle}, dispatch] = useReducer<ReducerType>(reducer, initialState)
 
+    // Slider Reference
     const ref = useRef<HTMLUListElement>(null)
 
-    useEffect(()=>{
-        dispatch({type: ActionEnum.CHANGE_SLIDE_IN_VP,
-            payload: getNumberOfSlidesViewPort(slidesInViewport)})
-    }, [slidesInViewport, windowSize.width])
+    // Returns List of <li> slide elements
+    const slideChildrenArray = () => (
+        Array.from(ref.current!.children as HTMLCollectionOf<HTMLElement>)
+    )
 
-    const changeSlide = (slide: number) => {
+    // Returns Singular Slide
+    const getElementFromArray = useCallback((index: number) => (
+        slideChildrenArray()[index]
+    ), [])
+
+    // Change current slide that is visible / active
+    const changeSlideState = (slide: number) => {
         dispatch({
             type: ActionEnum.CHANGE_SLIDE,
             payload: slide
         })
     }
 
-    const toggleLoading = (loading: boolean) => {
-        dispatch({
-            type: ActionEnum.CHANGE_LOADING,
-            payload: loading
-        })
-    }
+    // Returns the next slide index, if active slide is the last element in the slider, then return the first slide id
+    const nextSlide = useCallback((slide: number) => (
+        slide < children.length - 1 ? slide + 1 : 0
+    ), [children.length])
 
-    const canMoveForward = () => currentSlide < children.length - getNumberOfSlidesViewPort(slidesInViewport)
+    // Returns previous slide index, if active slide is the first element in the slider, then return the last slide id
+    const previousSlide = useCallback((slide: number) => (
+        slide === 0 ? children.length - 1 : slide - 1
+    ), [children.length])
 
-    const canMoveBackward = () => currentSlide !== 0
+    // This function has a direction so that movement functionality can be called via one function
+    const getSlide = useCallback((direction: SlideMovement, slide: number) => (
+        direction === 'forward' ? nextSlide(slide) : previousSlide(slide)
+    ), [nextSlide, previousSlide])
 
-    const loopInfinity = () => infinite && !async
-
-    const moveLeft = () => {
-        if(canMoveBackward()){
-            changeSlide(currentSlide - 1);
-        }else if(loopInfinity()){
-                changeSlide(0);
-            }
-    }
-
-    const moveRight = async () => {
-
-        if(canMoveForward()){
-            changeSlide(currentSlide + 1);
-        }else{
-            if(onLastSlide && async ){
-                toggleLoading(true);
-                onLastSlide().then(()=>{
-                    toggleLoading(false)
-                    if(currentSlide < children.length){
-                        changeSlide(currentSlide + 1);
-                    }
-                });
-            }
-            else{
-                changeSlide(0);
-            }
-        }
-    }
-
-    const getSlideWidth = () => {
+    // If there are multiple slide in the viewport,
+    // then the slide width will be calculated = 100% / Slides in the viewport
+    const getSlideWidth = useCallback(() => {
         return  100 / slidesInVP
+    }, [slidesInVP])
+
+    // Move slide to front or back
+    const moveSlide = useCallback((direction: SlideMovement) => {
+        // Get the current active slide
+        let current = getSlide(direction, currentSlide);
+        // Get the current active slide element
+        const element = getElementFromArray(current);
+        // Change order to 1 to move the current active slide backward/out of the viewport
+        element.style.order = '1';
+        let i:number, j:number, elem: number;
+        let slide = getSlide('forward', current);
+        // Assign css order to create a rotating effect
+        for (i = j = 2, elem = children.length; (2 <= elem ? j <= elem : j >= elem); i = 2 <= elem ? ++j : --j) {
+            const elm = getElementFromArray(slide);
+            elm.style.order = i.toString();
+            slide = getSlide('forward', slide);
+        }
+        // Change active slide
+        changeSlideState(current);
+        // Animate movement
+        dispatch({
+            type: ActionEnum.CHANGE_CAROUSEL_STYLE,
+            payload: carouselSliding(direction, getSlideWidth()),
+        })
+        // Stop animate
+        setTimeout(()=>{
+            dispatch({
+                type: ActionEnum.CHANGE_CAROUSEL_STYLE,
+                payload: carouselNotSliding,
+            })
+            if (onSlideChange) {
+                onSlideChange();
+            }
+        }, 50)
+    }, [children.length, currentSlide, getElementFromArray, getSlide, getSlideWidth, onSlideChange])
+    
+    // Slide move left or backward
+    const moveLeft = () => {
+        moveSlide('backward')
     }
 
-    const getMovement = () => {
-        return getSlideWidth() * currentSlide;
-    }
+    // Slide Move right or forward
+    const moveRight = useCallback(() => {
+        moveSlide('forward')
+    }, [moveSlide])
+
     
+
     useEffect(()=>{
         
         let timeout: NodeJS.Timeout;
@@ -145,42 +174,58 @@ export default function Carousel({children,
             clearTimeout(timeout);
         }
         
-    }, [autoplay, currentSlide, interval])
+    }, [autoplay, currentSlide, interval, moveRight])
+
+
+    useEffect(()=>{
+        dispatch({type: ActionEnum.CHANGE_SLIDE_IN_VP,
+            payload: getNumberOfSlidesViewPort(slidesInViewport)})
+    }, [slidesInViewport, windowSize.width])
+
+
+    useEffect(()=>{
+        changeSlideState(children.length - 1);
+        const element = getElementFromArray(children.length - 1);
+        slideChildrenArray().forEach(each => {
+            if (each === element){
+                each.style.order = '1'
+            }else{
+                each.style.order = '2';
+            }
+        })
+    }, [children.length, getElementFromArray])
 
 
     return(
         <div style={styles.root}>
-            <div style={styles.carousel}>
-                <div style={styles.wrapper}>
-                    <ul ref={ref} style={{...styles.slider, transform: `translate3D(-${getMovement()}%, 0, 0)`}}>
-                        {
-                            children.map((each, key) => (
-                                <li style={{...styles.slide, boxSizing:
-                                        "border-box", flex: `0 0 ${100 / slidesInVP}%`,
-                                    padding: gap ? ' 0 1rem': '0',
+            <div style={styles.wrapper}>
+                <ul ref={ref} style={{...styles.slider, ...carouselStyle, left: `-${getSlideWidth()}%`}}>
+                    {
+                        children.map((each, key) => (
+                            <li style={{...styles.slide, boxSizing: "border-box", flex: `0 0 ${100 / slidesInVP}%`,
+                                padding: gap ? ' 0 1rem': '0',
+                            }} key={key}>
+                                {each}
+                            </li>
+                        ))
+                    }
 
-                                }} key={key}>
-                                    {each}
-                                </li>
-                            ))
-                        }
-
-                    </ul>
-
-                </div>
-                <button disabled={isLoading}
-                        onClick={moveRight}
-                        style={{...styles.sliderButton, right: 0}}
-                        className={buttonClassName}>
-                    {">"}
-                    {isLoading && 'Loading'}
-                </button>
-                <button onClick={moveLeft}
-                        style={{...styles.sliderButton, left: 0}}
-                        className={buttonClassName}>
-                    {"<"}
-                </button>
+                </ul>
             </div>
+            <button onClick={moveRight}
+                    style={{...styles.sliderButton, right: 0}}
+                    className={buttonClassName}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={styles.sliderIcon} viewBox="0 0 40 40" width="20" height="20">
+                    <path d="m13.5 7.01 13 13m-13 13 13-13"/>
+                </svg>
+            </button>
+            <button onClick={moveLeft}
+                    style={{...styles.sliderButton, left: 0}}
+                    className={buttonClassName}>
+                <svg xmlns="http://www.w3.org/2000/svg" style={{...styles.sliderIcon, transform: 'scaleX(-1)'}} viewBox="0 0 40 40" width="20" height="20">
+                    <path d="m13.5 7.01 13 13m-13 13 13-13"/>
+                </svg>
+            </button>
         </div>
     )
 }
