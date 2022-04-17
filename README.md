@@ -1,7 +1,8 @@
+### This project is deprecated ⚠️
 <div align="center">
 <img src="public/logo.png" height="150" alt=""/>
 <h1>
-react-slider
+react-slider [deprecated ⚠️]
 </h1>
 <img src="https://github.com/khan-asfi-reza/react-slider/actions/workflows/test.yaml/badge.svg" alt=""/>
 <p>
@@ -9,6 +10,9 @@ React based lightweight carousel slider
 </p>
 </div>
 
+New version
+
+[React-Blaze-Carouse](https://www.github.com/khan-asfi-reza/react-blaze-carousel)
 
 ## Features 🎆
 
